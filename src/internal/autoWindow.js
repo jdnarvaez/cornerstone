@@ -1,5 +1,4 @@
 import getMinMax from './getMinMax.js';
-import getStoredValue from './getStoredValue.js';
 
 function hasModalityLUT (viewport) {
   return viewport.modalityLUT && viewport.modalityLUT.lut && viewport.modalityLUT.lut.length > 0;
@@ -17,17 +16,7 @@ function hasVoiLUT (viewport) {
  */
 export default function (image, viewport) {
   if (image.minPixelValue === undefined || image.maxPixelValue === undefined) {
-    const shouldShift = image.pixelRepresentation !== undefined && image.pixelRepresentation === 1;
-    const shift = (shouldShift && image.bitsStored !== undefined) ? (32 - image.bitsStored) : undefined;
-    let minMax;
-
-    if (shouldShift && shift !== undefined) {
-      const pixelData = image.getPixelData();
-      minMax = getMinMax(pixelData.map(function(sv, i) { return getStoredValue(i, pixelData, shift); }));
-    } else {
-      minMax = getMinMax(image.getPixelData());
-    }
-
+    const minMax = getMinMax(image.getPixelData());
     image.minPixelValue = minMax.min;
     image.maxPixelValue = minMax.max;
   }

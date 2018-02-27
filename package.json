@@ -29,6 +29,7 @@
     "doc:generate": "npm run clean:docs && jsdoc -c .jsdocrc",
     "version": "node -p -e \"'export default \\'' + require('./package.json').version + '\\';'\" > src/version.js",
     "build": "npm run test && npm run version && npm run webpack && npm run doc:generate",
+    "build:quick": "npm run version && npm run webpack",
     "webpack": "npm run clean:dist && npm run webpack:prod && npm run webpack:dev",
     "start": "npm run webpack",
     "webpack:dev": "webpack --progress --config ./config/webpack/webpack-dev",

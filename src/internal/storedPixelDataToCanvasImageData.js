@@ -1,5 +1,4 @@
 import now from './now.js';
-import getStoredValue from './getStoredValue.js';
 
 /**
  * This function transforms stored pixel values into a canvas image data buffer
@@ -22,12 +21,12 @@ export default function (image, lut, canvasImageDataData) {
   const pixelData = image.getPixelData();
 
   image.stats.lastGetPixelDataTime = now() - start;
-  const shouldShift = image.pixelRepresentation !== undefined && image.pixelRepresentation === 1;
-  const shift = (shouldShift && image.bitsStored !== undefined) ? (32 - image.bitsStored) : undefined;
+
   const numPixels = pixelData.length;
   const minPixelValue = image.minPixelValue;
   let canvasImageDataIndex = 3;
   let storedPixelDataIndex = 0;
+
 
   // NOTE: As of Nov 2014, most javascript engines have lower performance when indexing negative indexes.
   // We have a special code path for this case that improves performance.  Thanks to @jpambrun for this enhancement
@@ -37,28 +36,28 @@ export default function (image, lut, canvasImageDataData) {
   if (pixelData instanceof Int16Array) {
     if (minPixelValue < 0) {
       while (storedPixelDataIndex < numPixels) {
-        canvasImageDataData[canvasImageDataIndex] = lut[getStoredValue(storedPixelDataIndex++, pixelData, shift) + (-minPixelValue)]; // Alpha
+        canvasImageDataData[canvasImageDataIndex] = lut[pixelData[storedPixelDataIndex++] + (-minPixelValue)]; // Alpha
         canvasImageDataIndex += 4;
       }
     } else {
       while (storedPixelDataIndex < numPixels) {
-        canvasImageDataData[canvasImageDataIndex] = lut[getStoredValue(storedPixelDataIndex++, pixelData, shift)]; // Alpha
+        canvasImageDataData[canvasImageDataIndex] = lut[pixelData[storedPixelDataIndex++]]; // Alpha
         canvasImageDataIndex += 4;
       }
     }
   } else if (pixelData instanceof Uint16Array) {
     while (storedPixelDataIndex < numPixels) {
-      canvasImageDataData[canvasImageDataIndex] = lut[getStoredValue(storedPixelDataIndex++, pixelData, shift)]; // Alpha
+      canvasImageDataData[canvasImageDataIndex] = lut[pixelData[storedPixelDataIndex++]]; // Alpha
       canvasImageDataIndex += 4;
     }
   } else if (minPixelValue < 0) {
     while (storedPixelDataIndex < numPixels) {
-      canvasImageDataData[canvasImageDataIndex] = lut[getStoredValue(storedPixelDataIndex++, pixelData, shift) + (-minPixelValue)]; // Alpha
+      canvasImageDataData[canvasImageDataIndex] = lut[pixelData[storedPixelDataIndex++] + (-minPixelValue)]; // Alpha
       canvasImageDataIndex += 4;
     }
   } else {
     while (storedPixelDataIndex < numPixels) {
-      canvasImageDataData[canvasImageDataIndex] = lut[getStoredValue(storedPixelDataIndex++, pixelData, shift)]; // Alpha
+      canvasImageDataData[canvasImageDataIndex] = lut[pixelData[storedPixelDataIndex++]]; // Alpha
       canvasImageDataIndex += 4;
     }
   }

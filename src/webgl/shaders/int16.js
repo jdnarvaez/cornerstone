@@ -1,6 +1,4 @@
 /* eslint no-bitwise: 0 */
-import getStoredValue from '../../internal/getStoredValue.js';
-
 const int16Shader = {};
 
 /**
@@ -20,12 +18,10 @@ function storedPixelDataToImageData (image, mlutfn, vlutfn) {
   const pixelData = image.getPixelData();
   const numberOfChannels = 3;
   const data = new Uint8Array(image.width * image.height * numberOfChannels);
-  const shouldShift = image.pixelRepresentation !== undefined && image.pixelRepresentation === 1;
-  const shift = (shouldShift && image.bitsStored !== undefined) ? (32 - image.bitsStored) : undefined;
   let offset = 0;
 
   for (let i = 0; i < pixelData.length; i++) {
-    var sv = getStoredValue(i, pixelData, shift);
+    var sv = pixelData[i];
 
     if (image.photometricInterpretation === "MONOCHROME1") {
       sv = image.maxPixelValue - sv;

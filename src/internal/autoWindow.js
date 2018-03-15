@@ -1,5 +1,4 @@
 import getMinMax from './getMinMax.js';
-import getStoredValue from './getStoredValue.js';
 
 function hasModalityLUT (viewport) {
   return viewport.modalityLUT && viewport.modalityLUT.lut && viewport.modalityLUT.lut.length > 0;
@@ -16,17 +15,16 @@ function hasVoiLUT (viewport) {
  * @param {Viewport} image A Cornerstone Viewport Object
  */
 export default function (image, viewport) {
-  if (image.minPixelValue === undefined || image.maxPixelValue === undefined) {
-    const shouldShift = image.pixelRepresentation !== undefined && image.pixelRepresentation === 1;
-    const shift = (shouldShift && image.bitsStored !== undefined) ? (32 - image.bitsStored) : undefined;
-    let minMax;
+  if (!image) {
+    return;
+  }
+  
+  if (!viewport.voi) {
+    viewport.voi = {};
+  }
 
-    if (shouldShift && shift !== undefined) {
-      const pixelData = image.getPixelData();
-      minMax = getMinMax(pixelData.map(function(sv, i) { return getStoredValue(i, pixelData, shift); }));
-    } else {
-      minMax = getMinMax(image.getPixelData());
-    }
+  if (image.minPixelValue === undefined || image.maxPixelValue === undefined) {
+    const minMax = getMinMax(image.getPixelData());
 
     image.minPixelValue = minMax.min;
     image.maxPixelValue = minMax.max;
@@ -43,7 +41,7 @@ export default function (image, viewport) {
     viewport.voi.minMax = minMax;
   }
 
-  if (viewport.voi.windowWidth === undefined || viewport.voi.windowCenter === undefined) {
+  if (viewport.voi === undefined || viewport.voi.windowWidth === undefined || viewport.voi.windowCenter === undefined) {
     var min = image.minPixelValue;
     var max = image.maxPixelValue;
 

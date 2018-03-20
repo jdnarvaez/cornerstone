@@ -6564,8 +6564,6 @@ exports.default = function (element, options) {
    * @memberof Drawing
    */
   function draw(timestamp) {
-    console.trace();
-
     if (enabledElement.canvas === undefined) {
       return;
     }

@@ -1,4 +1,4 @@
-/*! cornerstone-core - 2.1.0 - 2018-03-15 | (c) 2016 Chris Hafey | https://github.com/cornerstonejs/cornerstone */
+/*! cornerstone-core - 2.1.0 - 2018-03-20 | (c) 2016 Chris Hafey | https://github.com/cornerstonejs/cornerstone */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -6564,6 +6564,8 @@ exports.default = function (element, options) {
    * @memberof Drawing
    */
   function draw(timestamp) {
+    console.trace();
+
     if (enabledElement.canvas === undefined) {
       return;
     }

@@ -25,6 +25,7 @@ export default function (image, viewport) {
 
   const modalityLUT = viewport.modalityLUT;
   const voiLUT = viewport.voiLUT;
+  const presentationLUT = viewport.presentationLUT;
   const windowWidth = viewport.voi.windowWidth;
   const windowCenter = viewport.voi.windowCenter;
   const invert = viewport.invert || image.photometricInterpretation === 'MONOCHROME1';
@@ -43,14 +44,15 @@ export default function (image, viewport) {
   const lut = image.cachedLut.lutArray;
   const mlutfn = getModalityLUT(image.slope, image.intercept, modalityLUT);
   const vlutfn = getVOILUT(windowWidth, windowCenter, voiLUT);
+  const plutfn = presentationLUT ? getVOILUT(undefined, undefined, presentationLUT) : function(sv) { return sv; };
 
   if (invert === true) {
     for (let storedValue = minPixelValue; storedValue <= maxPixelValue; storedValue++) {
-      lut[storedValue + (-offset)] = 255 - vlutfn(mlutfn(storedValue));
+      lut[storedValue + (-offset)] = 255 - plutfn(vlutfn(mlutfn(storedValue)));
     }
   } else {
     for (let storedValue = minPixelValue; storedValue <= maxPixelValue; storedValue++) {
-      lut[storedValue + (-offset)] = vlutfn(mlutfn(storedValue));
+      lut[storedValue + (-offset)] = plutfn(vlutfn(mlutfn(storedValue)));
     }
   }
 

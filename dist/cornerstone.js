@@ -1,4 +1,4 @@
-/*! cornerstone-core - 2.1.0 - 2018-03-20 | (c) 2016 Chris Hafey | https://github.com/cornerstonejs/cornerstone */
+/*! cornerstone-core - 2.1.0 - 2018-08-17 | (c) 2016 Chris Hafey | https://github.com/cornerstonejs/cornerstone */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -1597,6 +1597,7 @@ exports.default = function (image, viewport) {
 
   var modalityLUT = viewport.modalityLUT;
   var voiLUT = viewport.voiLUT;
+  var presentationLUT = viewport.presentationLUT;
   var windowWidth = viewport.voi.windowWidth;
   var windowCenter = viewport.voi.windowCenter;
   var invert = viewport.invert || image.photometricInterpretation === 'MONOCHROME1';
@@ -1615,14 +1616,17 @@ exports.default = function (image, viewport) {
   var lut = image.cachedLut.lutArray;
   var mlutfn = (0, _getModalityLUT2.default)(image.slope, image.intercept, modalityLUT);
   var vlutfn = (0, _getVOILut2.default)(windowWidth, windowCenter, voiLUT);
+  var plutfn = presentationLUT ? (0, _getVOILut2.default)(undefined, undefined, presentationLUT) : function (sv) {
+    return sv;
+  };
 
   if (invert === true) {
     for (var storedValue = minPixelValue; storedValue <= maxPixelValue; storedValue++) {
-      lut[storedValue + -offset] = 255 - vlutfn(mlutfn(storedValue));
+      lut[storedValue + -offset] = 255 - plutfn(vlutfn(mlutfn(storedValue)));
     }
   } else {
     for (var _storedValue = minPixelValue; _storedValue <= maxPixelValue; _storedValue++) {
-      lut[_storedValue + -offset] = vlutfn(mlutfn(_storedValue));
+      lut[_storedValue + -offset] = plutfn(vlutfn(mlutfn(_storedValue)));
     }
   }
 

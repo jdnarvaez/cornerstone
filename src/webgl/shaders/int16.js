@@ -10,7 +10,7 @@ const int16Shader = {};
  * @returns {Uint8Array} The image data for use by the WebGL shader
  * @memberof WebGLRendering
  */
-function storedPixelDataToImageData (image, mlutfn, vlutfn) {
+function storedPixelDataToImageData (image, mlutfn, vlutfn, plutfn) {
 
   // Transfer image data to alpha and luminance channels of WebGL texture
   // Credit to @jpambrun and @fernandojsg
@@ -34,6 +34,10 @@ function storedPixelDataToImageData (image, mlutfn, vlutfn) {
 
     if (vlutfn) {
       sv = vlutfn(sv);
+    }
+
+    if (plutfn) {
+      sv = plutfn(sv);
     }
 
     const val = Math.abs(sv);

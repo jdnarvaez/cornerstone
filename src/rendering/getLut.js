@@ -17,6 +17,7 @@ export default function (image, viewport, invalidated) {
     image.cachedLut.windowWidth === viewport.voi.windowWidth &&
     lutMatches(image.cachedLut.modalityLUT, viewport.modalityLUT) &&
     lutMatches(image.cachedLut.voiLUT, viewport.voiLUT) &&
+    lutMatches(image.cachedLut.presentationLUT, viewport.presentationLUT) &&
     image.cachedLut.invert === viewport.invert &&
     invalidated !== true) {
     return image.cachedLut.lutArray;
@@ -29,6 +30,7 @@ export default function (image, viewport, invalidated) {
   image.cachedLut.windowCenter = viewport.voi.windowCenter;
   image.cachedLut.invert = viewport.invert;
   image.cachedLut.voiLUT = viewport.voiLUT;
+  image.cachedLut.presentationLUT = viewport.presentationLUT;
   image.cachedLut.modalityLUT = viewport.modalityLUT;
 
   return image.cachedLut.lutArray;

@@ -9,7 +9,7 @@ const int8Shader = {};
  * @returns {Uint8Array} The image data for use by the WebGL shader
  * @memberof WebGLRendering
  */
-function storedPixelDataToImageData (image, mlutfn, vlutfn) {
+function storedPixelDataToImageData (image, mlutfn, vlutfn, plutfn) {
   // Transfer image data to alpha channel of WebGL texture
   // Store data in Uint8Array
   const pixelData = image.getPixelData();
@@ -30,6 +30,10 @@ function storedPixelDataToImageData (image, mlutfn, vlutfn) {
 
     if (vlutfn) {
       sv = vlutfn(sv);
+    }
+
+    if (plutfn) {
+      sv = plutfn(sv);
     }
 
     data[offset++] = sv;

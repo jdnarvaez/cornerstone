@@ -8,6 +8,10 @@ function hasVoiLUT (viewport) {
   return viewport.voiLUT && viewport.voiLUT.lut && viewport.voiLUT.lut.length > 0;
 }
 
+function hasPresentationLUT (viewport) {
+  return viewport.presentationLUT && viewport.presentationLUT.lut && viewport.presentationLUT.lut.length > 0;
+}
+
 /**
  * Calculate the min & max pixel values for an image and setup windows
  *
@@ -18,7 +22,7 @@ export default function (image, viewport) {
   if (!image) {
     return;
   }
-  
+
   if (!viewport.voi) {
     viewport.voi = {};
   }
@@ -31,7 +35,11 @@ export default function (image, viewport) {
   }
 
   //Setup min max of the VOI since these output values can change what WebGL shader is required
-  if (hasVoiLUT(viewport)) {
+  if (hasPresentationLUT(viewport)) {
+    const minMax = getMinMax(viewport.presentationLUT.lut);
+    viewport.voi.minMax = minMax;
+    viewport.voiLUT.minMax = minMax;
+  } else if (hasVoiLUT(viewport)) {
     const minMax = getMinMax(viewport.voiLUT.lut);
     viewport.voi.minMax = minMax;
     viewport.voiLUT.minMax = minMax;
@@ -45,7 +53,10 @@ export default function (image, viewport) {
     var min = image.minPixelValue;
     var max = image.maxPixelValue;
 
-    if (viewport.voiLUT) {
+    if (viewport.presentationLUT) {
+      min = viewport.presentationLUT.minMax.min;
+      max = viewport.presentationLUT.minMax.max;
+    } else if (viewport.voiLUT) {
       min = viewport.voiLUT.minMax.min;
       max = viewport.voiLUT.minMax.max;
     } else if (viewport.modalityLUT) {

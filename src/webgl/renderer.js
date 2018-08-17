@@ -150,7 +150,7 @@ function getShaderProgram (image, viewport) {
   return shaders.rgb;
 }
 
-function generateTexture (image, viewport, mlutfn, vlutfn) {
+function generateTexture (image, viewport, mlutfn, vlutfn, plutfn) {
   const TEXTURE_FORMAT = {
     uint8: gl.LUMINANCE,
     int8: gl.LUMINANCE_ALPHA,
@@ -180,7 +180,7 @@ function generateTexture (image, viewport, mlutfn, vlutfn) {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
-  const imageData = dataUtilities[imageDataType].storedPixelDataToImageData(image, mlutfn, vlutfn);
+  const imageData = dataUtilities[imageDataType].storedPixelDataToImageData(image, mlutfn, vlutfn, plutfn);
 
   gl.texImage2D(gl.TEXTURE_2D, 0, format, image.width, image.height, 0, format, gl.UNSIGNED_BYTE, imageData);
 
@@ -193,12 +193,12 @@ function generateTexture (image, viewport, mlutfn, vlutfn) {
   };
 }
 
-function getImageTexture (image, viewport, mlutfn, vlutfn) {
+function getImageTexture (image, viewport, mlutfn, vlutfn, plutfn) {
   let imageTexture = textureCache.getImageTexture(image.imageId);
 
   if (!imageTexture) {
     // Console.log("Generating texture for imageid: ", image.imageId);
-    imageTexture = generateTexture(image, viewport, mlutfn, vlutfn);
+    imageTexture = generateTexture(image, viewport, mlutfn, vlutfn, plutfn);
     textureCache.putImageTexture(image, imageTexture);
   }
 
@@ -320,13 +320,14 @@ export function render (enabledElement) {
   let start = now();
   const mlutfn = (viewport.modalityLUT !== undefined && viewport.modalityLUT.lut !== undefined) ? getModalityLUTFunction(viewport.modalityLUT) : undefined;
   const vlutfn = (viewport.voiLUT !== undefined && viewport.voiLUT.lut !== undefined) ? getVoiLUTFunction(viewport.voiLUT) : undefined;
+  const plutfn = (viewport.presentationLUT !== undefined && viewport.presentationLUT.lut !== undefined) ? getVoiLUTFunction(viewport.presentationLUT) : undefined;
 
   image.stats = image.stats || {};
   image.stats.lastLutGenerateTime = now() - start;
 
   // Render the current image
   const shader = getShaderProgram(image, viewport);
-  const texture = getImageTexture(image, viewport, mlutfn, vlutfn);
+  const texture = getImageTexture(image, viewport, mlutfn, vlutfn, plutfn);
 
   const parameters = {
     u_resolution: { type: '2f',

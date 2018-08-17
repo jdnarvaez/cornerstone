@@ -2537,21 +2537,28 @@ exports.default = function (image, viewport) {
   }
 
   //Setup min max of the VOI since these output values can change what WebGL shader is required
-  if (hasVoiLUT(viewport)) {
-    var _minMax = (0, _getMinMax2.default)(viewport.voiLUT.lut);
+  if (hasPresentationLUT(viewport)) {
+    var _minMax = (0, _getMinMax2.default)(viewport.presentationLUT.lut);
     viewport.voi.minMax = _minMax;
     viewport.voiLUT.minMax = _minMax;
-  } else if (hasModalityLUT(viewport)) {
-    var _minMax2 = (0, _getMinMax2.default)(viewport.modalityLUT.lut);
-    viewport.modalityLUT.minMax = _minMax2;
+  } else if (hasVoiLUT(viewport)) {
+    var _minMax2 = (0, _getMinMax2.default)(viewport.voiLUT.lut);
     viewport.voi.minMax = _minMax2;
+    viewport.voiLUT.minMax = _minMax2;
+  } else if (hasModalityLUT(viewport)) {
+    var _minMax3 = (0, _getMinMax2.default)(viewport.modalityLUT.lut);
+    viewport.modalityLUT.minMax = _minMax3;
+    viewport.voi.minMax = _minMax3;
   }
 
   if (viewport.voi === undefined || viewport.voi.windowWidth === undefined || viewport.voi.windowCenter === undefined) {
     var min = image.minPixelValue;
     var max = image.maxPixelValue;
 
-    if (viewport.voiLUT) {
+    if (viewport.presentationLUT) {
+      min = viewport.presentationLUT.minMax.min;
+      max = viewport.presentationLUT.minMax.max;
+    } else if (viewport.voiLUT) {
       min = viewport.voiLUT.minMax.min;
       max = viewport.voiLUT.minMax.max;
     } else if (viewport.modalityLUT) {
@@ -2576,6 +2583,10 @@ function hasModalityLUT(viewport) {
 
 function hasVoiLUT(viewport) {
   return viewport.voiLUT && viewport.voiLUT.lut && viewport.voiLUT.lut.length > 0;
+}
+
+function hasPresentationLUT(viewport) {
+  return viewport.presentationLUT && viewport.presentationLUT.lut && viewport.presentationLUT.lut.length > 0;
 }
 
 /**
@@ -3699,7 +3710,7 @@ Object.defineProperty(exports, "__esModule", {
 
 exports.default = function (image, viewport, invalidated) {
   // If we have a cached lut and it has the right values, return it immediately
-  if (image.cachedLut !== undefined && image.cachedLut.windowCenter === viewport.voi.windowCenter && image.cachedLut.windowWidth === viewport.voi.windowWidth && (0, _lutMatches2.default)(image.cachedLut.modalityLUT, viewport.modalityLUT) && (0, _lutMatches2.default)(image.cachedLut.voiLUT, viewport.voiLUT) && image.cachedLut.invert === viewport.invert && invalidated !== true) {
+  if (image.cachedLut !== undefined && image.cachedLut.windowCenter === viewport.voi.windowCenter && image.cachedLut.windowWidth === viewport.voi.windowWidth && (0, _lutMatches2.default)(image.cachedLut.modalityLUT, viewport.modalityLUT) && (0, _lutMatches2.default)(image.cachedLut.voiLUT, viewport.voiLUT) && (0, _lutMatches2.default)(image.cachedLut.presentationLUT, viewport.presentationLUT) && image.cachedLut.invert === viewport.invert && invalidated !== true) {
     return image.cachedLut.lutArray;
   }
 
@@ -3710,6 +3721,7 @@ exports.default = function (image, viewport, invalidated) {
   image.cachedLut.windowCenter = viewport.voi.windowCenter;
   image.cachedLut.invert = viewport.invert;
   image.cachedLut.voiLUT = viewport.voiLUT;
+  image.cachedLut.presentationLUT = viewport.presentationLUT;
   image.cachedLut.modalityLUT = viewport.modalityLUT;
 
   return image.cachedLut.lutArray;
@@ -5597,7 +5609,7 @@ function getShaderProgram(image, viewport) {
   return _index.shaders.rgb;
 }
 
-function generateTexture(image, viewport, mlutfn, vlutfn) {
+function generateTexture(image, viewport, mlutfn, vlutfn, plutfn) {
   var TEXTURE_FORMAT = {
     uint8: gl.LUMINANCE,
     int8: gl.LUMINANCE_ALPHA,
@@ -5627,7 +5639,7 @@ function generateTexture(image, viewport, mlutfn, vlutfn) {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
-  var imageData = _index.dataUtilities[imageDataType].storedPixelDataToImageData(image, mlutfn, vlutfn);
+  var imageData = _index.dataUtilities[imageDataType].storedPixelDataToImageData(image, mlutfn, vlutfn, plutfn);
 
   gl.texImage2D(gl.TEXTURE_2D, 0, format, image.width, image.height, 0, format, gl.UNSIGNED_BYTE, imageData);
 
@@ -5640,12 +5652,12 @@ function generateTexture(image, viewport, mlutfn, vlutfn) {
   };
 }
 
-function getImageTexture(image, viewport, mlutfn, vlutfn) {
+function getImageTexture(image, viewport, mlutfn, vlutfn, plutfn) {
   var imageTexture = _textureCache2.default.getImageTexture(image.imageId);
 
   if (!imageTexture) {
     // Console.log("Generating texture for imageid: ", image.imageId);
-    imageTexture = generateTexture(image, viewport, mlutfn, vlutfn);
+    imageTexture = generateTexture(image, viewport, mlutfn, vlutfn, plutfn);
     _textureCache2.default.putImageTexture(image, imageTexture);
   }
 
@@ -5755,13 +5767,14 @@ function render(enabledElement) {
   var start = (0, _now2.default)();
   var mlutfn = viewport.modalityLUT !== undefined && viewport.modalityLUT.lut !== undefined ? getModalityLUTFunction(viewport.modalityLUT) : undefined;
   var vlutfn = viewport.voiLUT !== undefined && viewport.voiLUT.lut !== undefined ? getVoiLUTFunction(viewport.voiLUT) : undefined;
+  var plutfn = viewport.presentationLUT !== undefined && viewport.presentationLUT.lut !== undefined ? getVoiLUTFunction(viewport.presentationLUT) : undefined;
 
   image.stats = image.stats || {};
   image.stats.lastLutGenerateTime = (0, _now2.default)() - start;
 
   // Render the current image
   var shader = getShaderProgram(image, viewport);
-  var texture = getImageTexture(image, viewport, mlutfn, vlutfn);
+  var texture = getImageTexture(image, viewport, mlutfn, vlutfn, plutfn);
 
   var parameters = {
     u_resolution: { type: '2f',
@@ -5865,7 +5878,7 @@ var int16Shader = {};
  * @returns {Uint8Array} The image data for use by the WebGL shader
  * @memberof WebGLRendering
  */
-function storedPixelDataToImageData(image, mlutfn, vlutfn) {
+function storedPixelDataToImageData(image, mlutfn, vlutfn, plutfn) {
 
   // Transfer image data to alpha and luminance channels of WebGL texture
   // Credit to @jpambrun and @fernandojsg
@@ -5889,6 +5902,10 @@ function storedPixelDataToImageData(image, mlutfn, vlutfn) {
 
     if (vlutfn) {
       sv = vlutfn(sv);
+    }
+
+    if (plutfn) {
+      sv = plutfn(sv);
     }
 
     var val = Math.abs(sv);
@@ -5947,7 +5964,7 @@ var int8Shader = {};
  * @returns {Uint8Array} The image data for use by the WebGL shader
  * @memberof WebGLRendering
  */
-function storedPixelDataToImageData(image, mlutfn, vlutfn) {
+function storedPixelDataToImageData(image, mlutfn, vlutfn, plutfn) {
   // Transfer image data to alpha channel of WebGL texture
   // Store data in Uint8Array
   var pixelData = image.getPixelData();
@@ -5968,6 +5985,10 @@ function storedPixelDataToImageData(image, mlutfn, vlutfn) {
 
     if (vlutfn) {
       sv = vlutfn(sv);
+    }
+
+    if (plutfn) {
+      sv = plutfn(sv);
     }
 
     data[offset++] = sv;
@@ -6100,7 +6121,7 @@ var uint16Shader = {};
  * @returns {Uint8Array} The image data for use by the WebGL shader
  * @memberof WebGLRendering
  */
-function storedPixelDataToImageData(image, mlutfn, vlutfn) {
+function storedPixelDataToImageData(image, mlutfn, vlutfn, plutfn) {
 
   // Transfer image data to alpha and luminance channels of WebGL texture
   // Credit to @jpambrun and @fernandojsg
@@ -6124,6 +6145,10 @@ function storedPixelDataToImageData(image, mlutfn, vlutfn) {
 
     if (vlutfn) {
       sv = vlutfn(sv);
+    }
+
+    if (plutfn) {
+      sv = plutfn(sv);
     }
 
     data[offset++] = sv & 0xFF;
@@ -6179,7 +6204,7 @@ var uint8Shader = {};
  * @returns {Uint8Array} The image data for use by the WebGL shader
  * @memberof WebGLRendering
  */
-function storedPixelDataToImageData(image, mlutfn, vlutfn) {
+function storedPixelDataToImageData(image, mlutfn, vlutfn, plutfn) {
   // Transfer image data to alpha channel of WebGL texture
 
   if (mlutfn || vlutfn) {
@@ -6199,6 +6224,10 @@ function storedPixelDataToImageData(image, mlutfn, vlutfn) {
 
       if (vlutfn) {
         sv = vlutfn(sv);
+      }
+
+      if (plutfn) {
+        sv = plutfn(sv);
       }
 
       data[i] = sv;

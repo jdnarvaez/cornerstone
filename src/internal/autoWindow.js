@@ -38,7 +38,7 @@ export default function (image, viewport) {
   if (hasPresentationLUT(viewport)) {
     const minMax = getMinMax(viewport.presentationLUT.lut);
     viewport.voi.minMax = minMax;
-    viewport.voiLUT.minMax = minMax;
+    viewport.presentationLUT.minMax = minMax;
   } else if (hasVoiLUT(viewport)) {
     const minMax = getMinMax(viewport.voiLUT.lut);
     viewport.voi.minMax = minMax;

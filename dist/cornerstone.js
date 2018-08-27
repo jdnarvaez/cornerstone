@@ -1,4 +1,4 @@
-/*! cornerstone-core - 2.1.0 - 2018-08-17 | (c) 2016 Chris Hafey | https://github.com/cornerstonejs/cornerstone */
+/*! cornerstone-core - 2.1.0 - 2018-08-27 | (c) 2016 Chris Hafey | https://github.com/cornerstonejs/cornerstone */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -2540,7 +2540,7 @@ exports.default = function (image, viewport) {
   if (hasPresentationLUT(viewport)) {
     var _minMax = (0, _getMinMax2.default)(viewport.presentationLUT.lut);
     viewport.voi.minMax = _minMax;
-    viewport.voiLUT.minMax = _minMax;
+    viewport.presentationLUT.minMax = _minMax;
   } else if (hasVoiLUT(viewport)) {
     var _minMax2 = (0, _getMinMax2.default)(viewport.voiLUT.lut);
     viewport.voi.minMax = _minMax2;
@@ -6235,12 +6235,12 @@ function storedPixelDataToImageData(image, mlutfn, vlutfn, plutfn) {
 
     return data;
   } else if (image.photometricInterpretation === "MONOCHROME1") {
-    image.getPixelData().map(function (sv) {
+    return new Uint8Array(image.getPixelData().map(function (sv) {
       return image.maxPixelValue - sv;
-    });
+    }));
   }
 
-  return image.getPixelData();
+  return new Uint8Array(image.getPixelData());
 }
 
 var uint8DataUtilities = exports.uint8DataUtilities = {

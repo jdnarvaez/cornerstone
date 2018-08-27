@@ -40,10 +40,10 @@ function storedPixelDataToImageData (image, mlutfn, vlutfn, plutfn) {
 
     return data;
   } else if (image.photometricInterpretation === "MONOCHROME1") {
-    image.getPixelData().map(function(sv) { return image.maxPixelValue - sv; });
+    return new Uint8Array(image.getPixelData().map(function(sv) { return image.maxPixelValue - sv; }));
   }
 
-  return image.getPixelData();
+  return new Uint8Array(image.getPixelData());
 }
 
 export const uint8DataUtilities = {

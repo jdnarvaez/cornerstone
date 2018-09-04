@@ -1,4 +1,4 @@
-/*! cornerstone-core - 2.1.0 - 2018-08-27 | (c) 2016 Chris Hafey | https://github.com/cornerstonejs/cornerstone */
+/*! cornerstone-core - 2.1.0 - 2018-09-04 | (c) 2016 Chris Hafey | https://github.com/cornerstonejs/cornerstone */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -5740,7 +5740,7 @@ function getVoiLUTFunction(voiLUT) {
   var minMax = voiLUT.minMax;
   var minValue = minMax.min;
   var maxValue = minMax.max;
-  var maxValueMapped = voiLUT.firstValueMapped + voiLUT.lut.length - 1;
+  var maxValueMapped = voiLUT.firstValueMapped + voiLUT.lut.length;
 
   return function (modalityLutValue) {
     if (modalityLutValue < voiLUT.firstValueMapped) {

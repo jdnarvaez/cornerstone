@@ -293,7 +293,7 @@ function getVoiLUTFunction (voiLUT) {
   const minMax = voiLUT.minMax;
   const minValue = minMax.min;
   const maxValue = minMax.max;
-  const maxValueMapped = voiLUT.firstValueMapped + voiLUT.lut.length - 1;
+  const maxValueMapped = voiLUT.firstValueMapped + voiLUT.lut.length;
 
   return function (modalityLutValue) {
     if (modalityLutValue < voiLUT.firstValueMapped) {
